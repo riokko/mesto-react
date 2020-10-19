@@ -1,36 +1,66 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '../utils/Api';
+import Card from '../components/Card';
 
-function Main(props) {
+function Main({ onEditProfile, onAddPlace, onEditAvatar, onCardClick }) {
+    const [userName, setUserName] = useState(null);
+    const [userDescription, setUserDescription] = useState(null);
+    const [userAvatar, setUserAvatar] = useState(null);
+    const [cards, setCards] = useState([]);
+
+    useEffect(() => {
+        api.getUserInfo()
+            .then(({ name, about, avatar }) => {
+                setUserName(name);
+                setUserDescription(about);
+                setUserAvatar(avatar);
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+        api.getInitialCards()
+            .then((cardsData) => {
+                setCards(cardsData);
+            })
+            .catch((err) => {
+                console.log(err, 'catch');
+            });
+    }, []);
+
     return (
         <main>
             <section className="profile section">
-                <div className="profile__user-pic" onClick={props.onEditAvatar}>
-                    <img className="profile__avatar" src="#" alt="фото профиля" />
-                    <div className="profile__pen"></div>
+                <div className="profile__user-pic" onClick={onEditAvatar}>
+                    <img className="profile__avatar" src={userAvatar} alt="фото профиля" />
+                    <div className="profile__pen" />
                 </div>
                 <div className="profile__info">
                     <div className="profile__name">
-                        <h1 className="profile__name-title"></h1>
+                        <h1 className="profile__name-title">{userName}</h1>
                         <button
                             type="button"
                             className="profile__edit-button"
                             aria-label="Редактировать"
                             onClick={() => {
-                                props.onEditProfile();
+                                onEditProfile();
                             }}
-                        ></button>
+                        />
                     </div>
-                    <p className="profile__profession"></p>
+                    <p className="profile__profession">{userDescription}</p>
                 </div>
                 <button
                     className="profile__add-button"
                     type="button"
                     aria-label="Добавить место"
-                    onClick={props.onAddPlace}
-                ></button>
+                    onClick={onAddPlace}
+                />
             </section>
             <section className="elements section">
-                <ul className="elements__list"></ul>
+                <ul className="elements__list">
+                    {cards.map((card) => (
+                        <Card key={card._id} card={card} onCardClick={onCardClick} />
+                    ))}
+                </ul>
             </section>
         </main>
     );

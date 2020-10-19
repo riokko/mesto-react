@@ -10,6 +10,7 @@ function App() {
     const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] = useState(false);
     const [isAddPlacePopupOpen, setIsAddPlacePopupOpen] = useState(false);
     const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] = useState(false);
+    const [selectedCard, setSelectedCard] = useState({});
 
     function handleEditAvatarClick() {
         setIsEditAvatarPopupOpen(true);
@@ -21,10 +22,15 @@ function App() {
         setIsAddPlacePopupOpen(true);
     }
 
+    function handleCardClick(card) {
+        setSelectedCard(card);
+    }
+
     function closeAllPopups() {
         setIsEditAvatarPopupOpen(false);
         setIsEditProfilePopupOpen(false);
         setIsAddPlacePopupOpen(false);
+        setSelectedCard({});
     }
 
     return (
@@ -35,6 +41,7 @@ function App() {
                     onEditProfile={handleEditProfileClick}
                     onAddPlace={handleAddPlaceClick}
                     onEditAvatar={handleEditAvatarClick}
+                    onCardClick={handleCardClick}
                 />
                 <Footer />
             </div>
@@ -127,24 +134,7 @@ function App() {
                 </label>
             </PopupWithForm>
             <PopupWithForm name="card-remove" title="Вы уверены?" submitButtonText="Да" onClose={closeAllPopups} />
-            <ImagePopup />
-            <template className="template-element">
-                <li className="element">
-                    <button
-                        className="element__delete element__delete_hidden"
-                        type="button"
-                        aria-label="Удалить место"
-                    ></button>
-                    <img src="#" alt="" className="element__photo" />
-                    <div className="element__title">
-                        <h2 className="element__name"></h2>
-                        <div className="element__likes-container">
-                            <button className="element__like" type="button" aria-label="Отметить место"></button>
-                            <p className="element__likes"></p>
-                        </div>
-                    </div>
-                </li>
-            </template>
+            {selectedCard._id && <ImagePopup card={selectedCard} onClose={closeAllPopups} />}
         </>
     );
 }
