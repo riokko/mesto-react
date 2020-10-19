@@ -1,30 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/Api';
-import Card from '../components/Card';
+import Card from './Card';
 
-function Main({ onEditProfile, onAddPlace, onEditAvatar, onCardClick }) {
+function Main({
+    onEditProfile, onAddPlace, onEditAvatar, onCardClick,
+}) {
     const [userName, setUserName] = useState(null);
     const [userDescription, setUserDescription] = useState(null);
     const [userAvatar, setUserAvatar] = useState(null);
     const [cards, setCards] = useState([]);
 
     useEffect(() => {
-        api.getUserInfo()
-            .then(({ name, about, avatar }) => {
-                setUserName(name);
-                setUserDescription(about);
-                setUserAvatar(avatar);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-        api.getInitialCards()
-            .then((cardsData) => {
-                setCards(cardsData);
-            })
-            .catch((err) => {
-                console.log(err, 'catch');
-            });
+        async function fetchData() {
+            const [userInfo, cardsData] = await Promise.all([api.getUserInfo(), api.getInitialCards()]);
+            setUserName(userInfo.name);
+            setUserDescription(userInfo.about);
+            setUserAvatar(userInfo.avatar);
+            setCards(cardsData);
+        }
+        fetchData();
     }, []);
 
     return (
