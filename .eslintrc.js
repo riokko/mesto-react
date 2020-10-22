@@ -9,6 +9,7 @@ module.exports = {
         'react/jsx-indent-props': ['error', 4],
         'react/prop-types': 'off',
         'max-len': ['error', { code: 120 }],
+        'import/prefer-default-export': 'off',
     },
     parser: 'babel-eslint',
     plugins: ['prettier', 'babel', 'testing-library'],
