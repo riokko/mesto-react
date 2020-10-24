@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import '../App.css';
 import Header from './Header';
 import Main from './Main';
@@ -8,17 +8,21 @@ import ImagePopup from './ImagePopup';
 import api from '../utils/Api';
 import { CurrentUserContext } from '../contexts/CurrentUserContext';
 import EditProfilePopup from './EditProfilePopup';
+import EditAvatarPopup from './EditAvatarPopup';
 
 function App() {
     const [currentUser, setCurrentUser] = useState({});
-
+    const firstRender = useRef(true);
     useEffect(() => {
         async function fetchData() {
             const userInfo = await api.getUserInfo();
             setCurrentUser(userInfo);
         }
-        fetchData();
-    }, []);
+        if (firstRender.current) {
+            fetchData();
+            firstRender.current = false;
+        }
+    });
 
     const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] = useState(false);
     const [isAddPlacePopupOpen, setIsAddPlacePopupOpen] = useState(false);
@@ -53,6 +57,14 @@ function App() {
         closeAllPopups();
     }
 
+    function handleUpdateAvatar({ avatar }) {
+        api.editAvatar(avatar).then((data) => {
+            setCurrentUser(data);
+            // eslint-disable-next-line no-console
+        }).catch((err) => { console.log(err); });
+        closeAllPopups();
+    }
+
     return (
         <CurrentUserContext.Provider value={currentUser}>
             <div className="page__content">
@@ -70,26 +82,11 @@ function App() {
                 onClose={closeAllPopups}
                 onUpdateUser={handleUpdateUser}
             />
-            <PopupWithForm
-                name="edit-avatar-form"
-                title="Обновить аватар"
-                submitButtonText="Сохранить"
+            <EditAvatarPopup
                 isOpen={isEditAvatarPopupOpen}
                 onClose={closeAllPopups}
-            >
-                <label className="form__label">
-                    <input
-                        className="form__input form__input_type_avatar"
-                        id="avatar-url-input"
-                        value=""
-                        name="avatar"
-                        required
-                        placeholder="Введите url для аватара"
-                        onChange={() => {}}
-                    />
-                    <span className="form__error" id="avatar-url-input-error" />
-                </label>
-            </PopupWithForm>
+                onUpdateAvatar={handleUpdateAvatar}
+            />
             <PopupWithForm
                 name="new-item-form"
                 title="Новое место"
