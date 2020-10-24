@@ -11,7 +11,6 @@ function PopupWithForm({
                 <form className="form" name={name} method="GET" noValidate onSubmit={onSubmit}>
                     {children}
                     <button type="submit" className="form__button" onClick={onSubmit}>
-                        {/* <button type="submit" className="form__button form__button_disabled" disabled> */}
                         {submitButtonText}
                     </button>
                 </form>
