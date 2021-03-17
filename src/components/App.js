@@ -42,7 +42,30 @@ function App() {
         fetchData();
     }, []);
 
+    function tokenCheck() {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            return;
+        }
+        auth.getUserData(token)
+            .then((res) => {
+                if (res.status === 401) {
+                    throw new Error('Токен не передан или передан не в том формате');
+                } else if (res.status === 400) {
+                    throw new Error('Переданный токен некорректен');
+                } else {
+                    return res.json();
+                }
+            })
+            .then((res) => {
+                console.log(res);
+                const data = res.data ? res.data : {};
+                setUserProfile(data);
+            });
+    }
+
     useEffect(() => {
+        tokenCheck();
         if (loggedIn) {
             history.push('/');
         }
@@ -67,7 +90,7 @@ function App() {
     }
     const closeInfoTooltipSuccess = () => {
         setShowInfoTooltip(false);
-        history.push('/');
+        history.push(SIGNIN);
     };
 
     const closeInfoTooltipFailure = () => {
@@ -87,28 +110,6 @@ function App() {
                 }
             })
             .catch((e) => console.log(e));
-    }
-
-    function tokenCheck() {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            return;
-        }
-        auth.getUserData(token)
-            .then((res) => {
-                if (res.status === 401) {
-                    throw new Error('Токен не передан или передан не в том формате');
-                } else if (res.status === 400) {
-                    throw new Error('Переданный токен некорректен');
-                } else {
-                    return res.json();
-                }
-            })
-            .then((res) => {
-                console.log(res);
-                const data = res.data ? res.data : {};
-                setUserProfile(data);
-            });
     }
 
     function handleCardLike(card) {
@@ -134,7 +135,6 @@ function App() {
         }
         if (firstRender.current) {
             fetchData();
-            tokenCheck();
             firstRender.current = false;
         }
     });
@@ -163,9 +163,9 @@ function App() {
         api.patchUserInfo(userData)
             .then((data) => {
                 setCurrentUser(data);
-                // eslint-disable-next-line no-console
             })
             .catch((err) => {
+                // eslint-disable-next-line no-console
                 console.log(err);
             });
         closeAllPopups();
@@ -198,7 +198,12 @@ function App() {
     return (
         <CurrentUserContext.Provider value={currentUser}>
             <div className="page__content">
-                <Header loggedIn={loggedIn} setLoggedIn={setLoggedIn} userProfile={userProfile} />
+                <Header
+                    loggedIn={loggedIn}
+                    setLoggedIn={setLoggedIn}
+                    userProfile={userProfile}
+                    setUserProfile={setUserProfile}
+                />
                 <Switch>
                     <Route path={SIGNUP}>
                         <Register handleRegister={handleRegister} />

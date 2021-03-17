@@ -2,7 +2,9 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { SIGNIN, SIGNUP, MAIN } from '../utils/routes';
 
-function Header({ loggedIn, setLoggedIn, userProfile }) {
+function Header({
+    loggedIn, setLoggedIn, userProfile, setUserProfile,
+}) {
     const { email } = userProfile;
     const currentLocation = useLocation();
 
@@ -20,6 +22,7 @@ function Header({ loggedIn, setLoggedIn, userProfile }) {
                         onClick={() => {
                             localStorage.setItem('token', '');
                             setLoggedIn(false);
+                            setUserProfile('');
                         }}
                         className="authform__link"
                     >
