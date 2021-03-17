@@ -16,3 +16,6 @@
 @import url(../src/blocks/popup/__container/_type_photo/popup__container__type_photo.css);
 @import url(../src/blocks/profile/profile.css);
 @import url(../src/blocks/section/section.css);
+@import url(../src/blocks/authform/authform.css);
+@import url(../src/blocks/authpage/authpage.css);
+
