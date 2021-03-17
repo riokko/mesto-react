@@ -17,11 +17,20 @@ import EditAvatarPopup from './EditAvatarPopup';
 import AddPlacePopup from './AddPlacePopup';
 import ProtectedRoute from './ProtectedRoute';
 import * as auth from '../auth';
+import InfoTooltip from './InfoTooltip';
+import { SIGNIN, SIGNUP, MAIN } from '../utils/routes';
 
 function App() {
     const [currentUser, setCurrentUser] = useState({});
     const [cards, setCards] = useState([]);
-    const [loggedIn, setLoggedIn] = useState(false);
+    const [loggedIn, setLoggedIn] = useState(Boolean(localStorage.getItem('token')));
+    const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] = useState(false);
+    const [isAddPlacePopupOpen, setIsAddPlacePopupOpen] = useState(false);
+    const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] = useState(false);
+    const [selectedCard, setSelectedCard] = useState({});
+    const [showInfoTooltip, setShowInfoTooltip] = useState(false);
+    const [registerIsOk, setRegisterIsOk] = useState(false);
+    const [userProfile, setUserProfile] = useState({});
 
     const history = useHistory();
 
@@ -40,7 +49,8 @@ function App() {
     }, [loggedIn]);
 
     function handleLogin(email, password) {
-        auth.authorize(email, password)
+        return auth
+            .authorize(email, password)
             .then((data) => {
                 if (data.token) {
                     setLoggedIn(true);
@@ -50,19 +60,30 @@ function App() {
                 } else if (data.status === 401) {
                     throw new Error('пользователь с email не найден');
                 } else {
-                    throw new Error('что-то пошл о не так');
+                    throw new Error('что-то пошло не так');
                 }
             })
             .catch((e) => console.log(e));
     }
+    const closeInfoTooltipSuccess = () => {
+        setShowInfoTooltip(false);
+        history.push('/');
+    };
+
+    const closeInfoTooltipFailure = () => {
+        setShowInfoTooltip(false);
+    };
 
     function handleRegister(email, password) {
         auth.register(email, password)
             .then((res) => {
-                if (res.status !== 400) {
-                    history.push('/sign-in');
-                } else {
+                if (res.status === 400) {
+                    setRegisterIsOk(false);
+                    setShowInfoTooltip(true);
                     throw new Error('некорректно заполнено одно из полей');
+                } else {
+                    setRegisterIsOk(true);
+                    setShowInfoTooltip(true);
                 }
             })
             .catch((e) => console.log(e));
@@ -70,15 +91,25 @@ function App() {
 
     function tokenCheck() {
         const token = localStorage.getItem('token');
-        auth.getContent(token).then((res) => {
-            if (res.ok) {
-                setLoggedIn(true);
-            }
-        });
+        if (!token) {
+            return;
+        }
+        auth.getUserData(token)
+            .then((res) => {
+                if (res.status === 401) {
+                    throw new Error('Токен не передан или передан не в том формате');
+                } else if (res.status === 400) {
+                    throw new Error('Переданный токен некорректен');
+                } else {
+                    return res.json();
+                }
+            })
+            .then((res) => {
+                console.log(res);
+                const data = res.data ? res.data : {};
+                setUserProfile(data);
+            });
     }
-    useEffect(() => {
-        tokenCheck();
-    });
 
     function handleCardLike(card) {
         const isLiked = card.likes.some((i) => i._id === currentUser._id);
@@ -103,14 +134,10 @@ function App() {
         }
         if (firstRender.current) {
             fetchData();
+            tokenCheck();
             firstRender.current = false;
         }
     });
-
-    const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] = useState(false);
-    const [isAddPlacePopupOpen, setIsAddPlacePopupOpen] = useState(false);
-    const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] = useState(false);
-    const [selectedCard, setSelectedCard] = useState({});
 
     function handleEditAvatarClick() {
         setIsEditAvatarPopupOpen(true);
@@ -171,13 +198,13 @@ function App() {
     return (
         <CurrentUserContext.Provider value={currentUser}>
             <div className="page__content">
-                <Header />
+                <Header loggedIn={loggedIn} setLoggedIn={setLoggedIn} userProfile={userProfile} />
                 <Switch>
-                    <Route path="/sign-in">
-                        <Login handleLogin={handleLogin} tokenCheck={tokenCheck} />
-                    </Route>
-                    <Route path="/sign-up">
+                    <Route path={SIGNUP}>
                         <Register handleRegister={handleRegister} />
+                    </Route>
+                    <Route path={SIGNIN}>
+                        <Login handleLogin={handleLogin} tokenCheck={tokenCheck} />
                     </Route>
                     <ProtectedRoute
                         path="/"
@@ -191,7 +218,7 @@ function App() {
                         onCardLike={handleCardLike}
                         onCardDelete={handleCardDelete}
                     />
-                    <Route>{loggedIn ? <Redirect to="/" /> : <Redirect to="/sign-in" />}</Route>
+                    <Route>{loggedIn ? <Redirect to={MAIN} /> : <Redirect to={SIGNIN} />}</Route>
                 </Switch>
                 <Footer />
             </div>
@@ -209,6 +236,12 @@ function App() {
             <PopupWithForm name="card-remove" title="Вы уверены?" submitButtonText="Да" onClose={closeAllPopups} />
 
             {selectedCard._id && <ImagePopup card={selectedCard} onClose={closeAllPopups} />}
+            {showInfoTooltip && (
+                <InfoTooltip
+                    onClose={registerIsOk ? closeInfoTooltipSuccess : closeInfoTooltipFailure}
+                    isOk={registerIsOk}
+                />
+            )}
         </CurrentUserContext.Provider>
     );
 }

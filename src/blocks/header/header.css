@@ -1,19 +1,25 @@
 @import url(__logo/header__logo.css);
+@import url(__email/header__email.css);
+@import url(__nav/header__nav.css);
 
 .header {
-  max-width: 882px;
-  margin: 45px 0 40px;
-  border-bottom: 1px solid rgba(84, 84, 84, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 882px;
+    height: 120px;
+    border-bottom: 1px solid rgba(84, 84, 84, 0.7);
+    margin-bottom: 40px;
 }
 
 @media screen and (max-width: 750px) {
-  .header {
-    padding: 0 0 0 27px;
-  }
+    .header {
+        padding: 0 0 0 27px;
+    }
 }
 
 @media screen and (max-width: 520px) {
-  .header {
-    margin: 28px 0 42px;
-  }
+    .header {
+        margin-bottom: 42px;
+    }
 }

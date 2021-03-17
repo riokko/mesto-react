@@ -1,0 +1,13 @@
+.popup__register_type_ok {
+    background-image: url(../../../images/infotooltip-ok.png);
+    height: 120px;
+    width: 120px;
+    margin: 60px auto 32px;
+}
+
+.popup__register_type_notok {
+    background-image: url(../../../images/infotooltip-notok.png);
+    height: 120px;
+    width: 120px;
+    margin: 60px auto 32px;
+}

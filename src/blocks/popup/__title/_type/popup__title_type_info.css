@@ -1,0 +1,9 @@
+.popup__title_type_info {
+    width: 358px;
+    font-weight: 900;
+    font-size: 24px;
+    line-height: 1.2;
+    color: black;
+    margin: 34px auto 36px;
+    text-align: center;
+}
